@@ -8,12 +8,17 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.11"
+azure-keyvault-secrets = "^4.9.0"
+azure-identity = "^1.19.0"
 
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^4.1.0"
 black = "^24.10.0"
 isort = "^6.0.0"
+python-dotenv = "^1.0.1"
+pytest = "^8.3.4"
+pytest-mock = "^3.14.0"
 
 [build-system]
 requires = ["poetry-core"]
