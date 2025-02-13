@@ -16,9 +16,10 @@ def handle_binance_manager_errors(func: Callable):
     """Decorator for handling Binance API errors and logging them."""
 
     @wraps(func)
-    def wrapper(self, *args, **kwargs):
+    def wrapper(*args, **kwargs):
+        self = args[0]
         try:
-            return func(self, *args, **kwargs)
+            return func(*args, **kwargs)
         except ClientError as e:
             self.logger.error("Binance API error in %s.\n", func.__name__)
             raise RuntimeError(f"Binance API error: {e.error_message}") from e
