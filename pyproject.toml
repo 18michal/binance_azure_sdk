@@ -10,6 +10,8 @@ package-mode = false
 python = "^3.11"
 azure-keyvault-secrets = "^4.9.0"
 azure-identity = "^1.19.0"
+binance-connector = "^3.12.0"
+pandas = "^2.2.3"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -19,6 +21,7 @@ isort = "^6.0.0"
 python-dotenv = "^1.0.1"
 pytest = "^8.3.4"
 pytest-mock = "^3.14.0"
+ipykernel = "^6.29.5"
 
 [build-system]
 requires = ["poetry-core"]
