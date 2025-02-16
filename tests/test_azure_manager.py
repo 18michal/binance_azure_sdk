@@ -1,9 +1,9 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from azure.core.exceptions import ResourceNotFoundError
 
-from src.azure_config import AzureKeyVaultConfig
+from services.azure_manager import AzureKeyVaultConfig
 
 
 @pytest.fixture

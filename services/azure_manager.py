@@ -4,7 +4,7 @@ from azure.core.exceptions import ResourceNotFoundError
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 
-from src.helpers import configure_logger
+from services.helpers import configure_logger
 
 
 class AzureKeyVaultConfig:

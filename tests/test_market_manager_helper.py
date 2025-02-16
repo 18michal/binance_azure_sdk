@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 import pandas as pd
 import pytest
 
-from src.market_manager_helper import BinanceManagerHelper
+from services.src.market_manager_helper import BinanceManagerHelper
 
 
 @pytest.fixture

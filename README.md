@@ -44,11 +44,11 @@ This SDK provides:<br>
 ## SDK Modules
 | Module    | Description |
 | -------- | ------- |
-| src/azure_config.py | Handles secure retrieval of API keys from Azure Key Vault. |
-| src/helpers.py | Configures logging system for debugging & tracking. |
-| src/market_manager.py | Handles Binance API interactions (trades, balances, orders). |
-| src/market_manager_helper.py | Helper functions for Binance trading logic. |
-| src/crypto_market_fetcher.py | Fetches data about top 100 Cryptocurrencies from CoinGecko API. |
+| services/azure_config.py | Handles secure retrieval of API keys from Azure Key Vault. |
+| services/helpers.py | Configures logging system for debugging & tracking. |
+| services/market_manager.py | Handles Binance API interactions (trades, balances, orders). |
+| services/src/market_manager_helper.py | Helper functions for Binance trading logic. |
+| services/crypto_market_fetcher.py | Fetches data about top 100 Cryptocurrencies from CoinGecko API. |
 
 ## Running Code & Tests tip
 1. To execute a code, use this example:

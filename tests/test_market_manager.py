@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 
-from src.market_manager import BinanceManager
+from services.market_manager import BinanceManager
 
 
 @pytest.fixture

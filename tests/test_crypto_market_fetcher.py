@@ -1,9 +1,8 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from requests import RequestException
 
-from src.crypto_market_fetcher import CoinGeckoMarketData
+from services.crypto_market_fetcher import CoinGeckoMarketData
 
 
 @pytest.fixture
