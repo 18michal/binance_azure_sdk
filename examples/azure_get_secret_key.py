@@ -2,7 +2,7 @@ import os
 
 from dotenv import load_dotenv
 
-from src.azure_config import AzureKeyVaultConfig
+from services.azure_manager import AzureKeyVaultConfig
 
 load_dotenv()
 

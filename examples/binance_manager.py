@@ -2,7 +2,7 @@ import os
 
 from dotenv import load_dotenv
 
-from src.market_manager import BinanceManager
+from services.market_manager import BinanceManager
 
 
 def load_credentials():
