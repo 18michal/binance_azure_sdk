@@ -8,7 +8,7 @@ from binance.error import ClientError
 from binance.spot import Spot
 
 from services.crypto_market_fetcher import CoinGeckoMarketData
-from services.helpers import configure_logger
+from services.src.helpers import configure_logger
 from services.src.market_manager_helper import BinanceManagerHelper
 
 
