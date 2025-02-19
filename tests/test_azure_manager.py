@@ -3,14 +3,14 @@ from unittest.mock import patch
 import pytest
 from azure.core.exceptions import ResourceNotFoundError
 
-from services.azure_manager import AzureKeyVaultConfig
+from services.azure_manager import AzureKeyVaultManager
 
 
 @pytest.fixture
 def keyvault_config(mocker):
     """Fixture to create an instance of AzureKeyVaultConfig with mocked logger."""
     mock_logger = mocker.patch("src.azure_config.configure_logger")
-    return AzureKeyVaultConfig(
+    return AzureKeyVaultManager(
         kv_name="test-kv", kv_url="https://test-kv.vault.azure.net/"
     )
 

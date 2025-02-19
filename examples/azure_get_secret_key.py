@@ -2,11 +2,11 @@ import os
 
 from dotenv import load_dotenv
 
-from services.azure_manager import AzureKeyVaultConfig
+from services.azure_manager import AzureKeyVaultManager
 
 load_dotenv()
 
-azurekeyvaultconfig = AzureKeyVaultConfig(
+azurekeyvaultconfig = AzureKeyVaultManager(
     kv_name=os.getenv("AZURE_VAULT_NAME", ""),
     kv_url=os.getenv("AZURE_VAULT_URL", ""),
 )
