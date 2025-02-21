@@ -2,6 +2,7 @@ from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
+from pandas import DataFrame
 from pyodbc import Error
 
 from services.azure_manager import AzureDatabaseManager, AzureKeyVaultManager
@@ -148,14 +149,16 @@ def test_insert_market_history(mock_execute_query, db_manager):
 @patch("services.azure_manager.AzureDatabaseManager._execute_query")
 def test_insert_portfolio_balance(mock_execute_query, db_manager):
     """Test inserting portfolio balance data"""
-    balance_data = {
-        "asset": "BTC",
-        "free": 0.5,
-        "locked": 0.1,
-    }
+    balance_data = DataFrame(
+        {
+            "asset": ["BTC", "USDT"],
+            "free": [0.5, 100.0],
+            "locked": [0.1, 0.0],
+        }
+    )
 
     db_manager.insert_portfolio_balance(balance_data)
-    mock_execute_query.assert_called_once()
+    assert mock_execute_query.call_count == 2
 
 
 @patch("services.azure_manager.AzureDatabaseManager._execute_query")
