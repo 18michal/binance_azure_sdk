@@ -4,6 +4,7 @@ from typing import Optional
 from azure.core.exceptions import ResourceNotFoundError
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
+from pandas import DataFrame
 from pyodbc import Connection, Error, connect  # pylint: disable=E0611
 
 from services.src.helpers import configure_logger
@@ -132,7 +133,7 @@ class AzureDatabaseManager:
             trade_data["timestamp"],
         )
 
-        self._execute_query(query, values)
+        self._execute_query(query=query, values=values)
 
     def insert_market_history(
         self, market_data: dict[str, str | int | float | bool | datetime]
@@ -169,14 +170,14 @@ class AzureDatabaseManager:
             market_data["timestamp"],
         )
 
-        self._execute_query(query, values)
+        self._execute_query(query=query, values=values)
 
-    def insert_portfolio_balance(self, balance_data: dict[str, str | float]):
+    def insert_portfolio_balance(self, balance_data: DataFrame):
         """
-        Inserts a portfolio balance record into the Portfolio_Balance table.
+        Inserts portfolio balance records from a DataFrame into the Portfolio_Balance table.
 
         Args:
-            balance_data (dict): A dictionary containing balance details, including:
+            balance_data (pd.DataFrame): A DataFrame containing balance details with columns:
                 - asset (str)
                 - free (float)
                 - locked (float)
@@ -186,14 +187,10 @@ class AzureDatabaseManager:
         INSERT INTO Portfolio_Balance (asset, free, locked, timestamp)
         VALUES (?, ?, ?, ?)
         """
-        values = (
-            balance_data["asset"],
-            balance_data["free"],
-            balance_data["locked"],
-            datetime.now(),  # timestamp
-        )
 
-        self._execute_query(query, values)
+        for _, row in balance_data.iterrows():
+            values = (row["asset"], row["free"], row["locked"], datetime.now())
+            self._execute_query(query=query, values=values)
 
     def delete_old_trades(self):
         """
@@ -205,7 +202,7 @@ class AzureDatabaseManager:
         query = "DELETE FROM Trade_History WHERE timestamp < ?"
         values = (one_year_ago,)
 
-        self._execute_query(query, values)
+        self._execute_query(query=query, values=values)
         self.logger.info("Deleted trades older than one year.")
 
     def get_values_from_table(self, table_name: str):
