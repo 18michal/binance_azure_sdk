@@ -90,7 +90,6 @@ class AzureDatabaseManager:
         self.kv_config = key_vault
         self.logger = configure_logger(__name__)
 
-        # Load database credentials securely from Azure Key Vault
         self.server = self.kv_config.get_secret("azure-sql-server")
         self.sql_username = self.kv_config.get_secret("azure-sql-username")
         self.sql_password = self.kv_config.get_secret("azure-sql-password")
