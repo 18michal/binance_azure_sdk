@@ -1,5 +1,6 @@
 """ BinanceManager class for interacting with the Binance Spot API. """
 
+from datetime import datetime, timedelta, timezone
 from functools import wraps
 from typing import Any, Callable, Optional
 
@@ -81,6 +82,19 @@ class BinanceManager:
             str: Account type (e.g., "SPOT", "MARGIN").
         """
         return self.wallet.get("accountType", "Unknown")
+
+    @handle_binance_manager_errors
+    def get_current_symbol_price(self, symbol: str) -> float:
+        """
+        Fetch the current price of the symbol from Binance API.
+
+        Args:
+            symbol (str): Trading pair (e.g., BTCUSDT).
+
+        Returns:
+            float: The current price of the asset.
+        """
+        return float(self.client.ticker_price(symbol=symbol)["price"])
 
     def get_wallet_balances(self) -> pd.DataFrame:
         """
@@ -238,7 +252,9 @@ class BinanceManager:
             self.logger.error("Invalid order side: %s", side)
             raise ValueError("Side must be 'BUY' or 'SELL'.")
 
-        usdt_amount = quantity * (price if price else 1)  # Estimated cost
+        usdt_amount = quantity * (
+            price if price else self.get_current_symbol_price(symbol=symbol)
+        )  # Estimated cost
 
         asset, required_funds = (
             ("USDT", usdt_amount)
@@ -288,3 +304,98 @@ class BinanceManager:
         response = self.client.new_order_test(**order_params)
         self.logger.info("Order placed successfully:\n%s", response)
         return response
+
+    @handle_binance_manager_errors
+    def fetch_symbol_trade_history(
+        self,
+        symbol: str,
+        start_time: Optional[int] = None,
+        end_time: Optional[int] = None,
+    ) -> pd.DataFrame:
+        """
+        Fetches trade history for a given symbol within a specified time range.
+        If no time range is provided, it fetches trades without any time constraints.
+
+        Args:
+            symbol (str): The trading pair symbol (e.g., "BTCUSDT").
+            start_time (Optional[int]): The start time in milliseconds if provided.
+            end_time (Optional[int]): The end time in milliseconds if provided.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing trade history details with the following columns:
+                - symbol (str): The trading pair.
+                - orderId (int): The order ID associated with the trade.
+                - price (float): The executed price of the trade.
+                - qty (float): The traded quantity.
+                - quoteQty (float): The traded quote quantity.
+                - commission (float): The commission paid for the trade.
+                - commissionAsset (str): The asset in which the commission was paid.
+                - time (datetime): The timestamp of the trade (UTC).
+                - isBuyer (bool): Whether the trade was a buy order (True) or sell order (False).
+        """
+        trades_list = []
+
+        if start_time is None and end_time is None:
+            trades = self.client.my_trades(symbol=symbol)
+        else:
+            trades = self.client.my_trades(
+                symbol=symbol, startTime=start_time, endTime=end_time
+            )
+
+        if trades:
+            for trade in trades:
+                trades_list.append(
+                    {
+                        "symbol": trade["symbol"],
+                        "orderId": trade["orderId"],
+                        "price": float(trade["price"]),
+                        "qty": float(trade["qty"]),
+                        "quoteQty": float(trade["quoteQty"]),
+                        "commission": float(trade["commission"]),
+                        "commissionAsset": trade["commissionAsset"],
+                        "time": datetime.fromtimestamp(
+                            int(trade["time"]) / 1000, tz=timezone.utc
+                        ),
+                        "isBuyer": trade["isBuyer"],
+                    }
+                )
+
+        return pd.DataFrame(trades_list)
+
+    @handle_binance_manager_errors
+    def get_trade_history_last_24h(self) -> pd.DataFrame:
+        """
+        Fetches trade history for all symbols in the last 24 hours.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing trade history details.
+        """
+        now = datetime.now(timezone.utc)
+        start_time = int((now - timedelta(days=1)).timestamp() * 1000)
+        end_time = int(now.timestamp() * 1000)
+
+        balances = self.get_wallet_balances()
+        symbols = [
+            f"{row.asset}USDT" for _, row in balances.iterrows() if row.asset != "USDT"
+        ]
+
+        trade_list = [
+            self.fetch_symbol_trade_history(
+                symbol=symbol, start_time=start_time, end_time=end_time
+            )
+            for symbol in symbols
+        ]
+
+        if not trade_list:
+            self.logger.info("No trades within 24 hours found.")
+            return pd.DataFrame()
+
+        return pd.concat(trade_list, ignore_index=True)
+
+    def get_symbol_info(self, symbol: str):
+        """Fetch symbol trading rules from Binance."""
+        exchange_info = self.client.exchange_info()
+        for s in exchange_info["symbols"]:
+            if s["symbol"] == symbol:
+                return s
+        return None
