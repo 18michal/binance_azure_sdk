@@ -1,3 +1,5 @@
+""" Contains a helper class to fetch market data for cryptocurrencies from CoinGecko API. """
+
 from typing import Any
 
 from requests import RequestException, get

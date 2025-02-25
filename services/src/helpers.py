@@ -1,3 +1,5 @@
+""" Helper functions for the services module. """
+
 import logging
 
 

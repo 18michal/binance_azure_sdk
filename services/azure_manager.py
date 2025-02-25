@@ -1,3 +1,5 @@
+""" This module contains classes for managing Azure Key Vault and Azure SQL Database. """
+
 from datetime import datetime, timedelta
 from re import IGNORECASE, search
 from typing import Optional, Union
@@ -256,7 +258,7 @@ class AzureDatabaseManager:
         Args:
             query (str): The SQL query to execute.
             values (tuple | list[tuple]): The values to use in the query.
-            many (bool, optional): If True, executes a batch insert using executemany(). Defaults to False.
+            many (bool, optional): Executes a batch insert using executemany(). Defaults to False.
 
         Raises:
             RuntimeError: If the query execution fails.
