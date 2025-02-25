@@ -11,7 +11,7 @@ def market_data():
     return CoinGeckoMarketData()
 
 
-@patch("src.crypto_market_fetcher.get")
+@patch("services.crypto_market_fetcher.get")
 def test_fetch_market_data_success(mock_get, market_data):
     """Test successful API response."""
     mock_response = MagicMock()
