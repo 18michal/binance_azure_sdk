@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
-from typing import Optional
+from re import IGNORECASE, search
+from typing import Optional, Union
 
 from azure.core.exceptions import ResourceNotFoundError
 from azure.identity import DefaultAzureCredential
@@ -98,51 +99,52 @@ class AzureDatabaseManager:
         if not all([self.server, self.sql_username, self.sql_password]):
             raise ValueError("Missing database credentials from Azure Key Vault.")
 
-    def insert_trade(self, trade_data: dict[str, str | float | datetime]):
+    def insert_trade(self, trade_data: DataFrame):
         """
         Inserts a new trade record into the Trade_History table.
 
         Args:
-            trade_data (dict): A dictionary containing trade details, including:
-                - order_id (str)
+            trade_data (pd.DataFrame): A DataFrame containing trade details with columns:
+                - orderId (str)
                 - symbol (str)
-                - side (str)
-                - order_type (str)
                 - price (float)
-                - quantity (float)
-                - status (str)
-                - executed_qty (float)
-                - stop_price (float)
-                - timestamp (datetime)
+                - qty (float)               # quantity
+                - quoteQty (float)          # quote_quantity
+                - commission (float)
+                - commissionAsset (str)     # commission_asset
+                - isBuyer (str)             # is_buyer
+                - time (datetime)
         """
 
         query = """
-        INSERT INTO Trade_History (order_id, symbol, side, order_type, price, quantity, status, executed_qty, stop_price, timestamp)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO Trade_History (order_id, symbol, price, quantity, quote_quantity, commission, commission_asset, is_buyer, timestamp)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
-        values = (
-            trade_data["order_id"],
-            trade_data["symbol"],
-            trade_data["side"],
-            trade_data["order_type"],
-            trade_data["price"],
-            trade_data["quantity"],
-            trade_data["status"],
-            trade_data["executed_qty"],
-            trade_data["stop_price"],
-            trade_data["timestamp"],
-        )
+        values_list = [
+            (
+                row["orderId"],  # order_id
+                row["symbol"],
+                row["price"],
+                row["qty"],  # quantity
+                row["quoteQty"],  # quote_quantity
+                row["commission"],
+                row["commissionAsset"],  # commission_asset
+                row["isBuyer"],  # is_buyer
+                row["time"],
+            )
+            for _, row in trade_data.iterrows()
+        ]
 
-        self._execute_query(query=query, values=values)
+        self._execute_query(query=query, values=values_list, many=True)
 
     def insert_market_history(
-        self, market_data: dict[str, str | int | float | bool | datetime]
+        self, market_data_list: list[dict[str, str | int | float | bool | datetime]]
     ):
         """
-        Inserts market capitalization data into the Market_Capitalization_History table.
+        Inserts  market capitalization data into the Market_Capitalization_History table.
 
         Args:
-            market_data (dict): A dictionary containing market data, including:
+            market_data (list[dict]): A dictionary containing market data, including:
                 - market_cap_rank (int)
                 - name (str)
                 - symbol (str)
@@ -158,19 +160,22 @@ class AzureDatabaseManager:
         (market_cap_rank, name, symbol, price, price_high, price_low, market_cap, is_available_on_binance, timestamp)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
-        values = (
-            market_data["market_cap_rank"],
-            market_data["name"],
-            market_data["symbol"],
-            market_data["price"],
-            market_data["price_high"],
-            market_data["price_low"],
-            market_data["market_cap"],
-            market_data["is_available_on_binance"],
-            market_data["timestamp"],
-        )
+        values_list = [
+            (
+                market_data["market_cap_rank"],
+                market_data["name"],
+                market_data["symbol"],
+                market_data["current_price"],  # price
+                market_data["high_24h"],  # price_high
+                market_data["low_24h"],  # price_low
+                market_data["market_cap"],
+                market_data["is_available_on_binance"],
+                market_data["last_updated"],  # timestamp
+            )
+            for market_data in market_data_list
+        ]
 
-        self._execute_query(query=query, values=values)
+        self._execute_query(query=query, values=values_list, many=True)
 
     def insert_portfolio_balance(self, balance_data: DataFrame):
         """
@@ -188,9 +193,12 @@ class AzureDatabaseManager:
         VALUES (?, ?, ?, ?)
         """
 
-        for _, row in balance_data.iterrows():
-            values = (row["asset"], row["free"], row["locked"], datetime.now())
-            self._execute_query(query=query, values=values)
+        values_list = [
+            (row["asset"], row["free"], row["locked"], datetime.now())
+            for _, row in balance_data.iterrows()
+        ]
+
+        self._execute_query(query=query, values=values_list, many=True)
 
     def delete_old_trades(self):
         """
@@ -238,25 +246,37 @@ class AzureDatabaseManager:
                 f"Failed to connect to the Azure SQL database. Error: {e}"
             ) from e
 
-    def _execute_query(self, query: str, values: tuple):
+    def _execute_query(
+        self, query: str, values: Union[tuple, list[tuple]], many: bool = False
+    ):
         """
         Executes an SQL query that modifies the database (e.g., INSERT, UPDATE, DELETE).
 
         Args:
             query (str): The SQL query to execute.
-            values (tuple): The values to use in the query.
+            values (tuple | list[tuple]): The values to use in the query.
+            many (bool, optional): If True, executes a batch insert using executemany(). Defaults to False.
 
         Raises:
             RuntimeError: If the query execution fails.
         """
+        table_name = None
+        match = search(r"INTO\s+([^\s(]+)", query, IGNORECASE)
+        if match:
+            table_name = match.group(1)
         try:
             with self._connect() as conn:
                 cursor = conn.cursor()
-                cursor.execute(query, values)
+                if many:
+                    cursor.executemany(query, values)
+                else:
+                    cursor.execute(query, values)
                 conn.commit()
         except Error as e:
             self.logger.error("Error executing query.")
             raise RuntimeError("Error executing database query.") from e
+        finally:
+            self.logger.info("Query executed successfully on table: %s", table_name)
 
     def _fetch_query(self, query: str):
         """
