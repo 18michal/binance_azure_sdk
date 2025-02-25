@@ -193,9 +193,9 @@ class AzureDatabaseManager:
         INSERT INTO Portfolio_Balance (asset, free, locked, timestamp)
         VALUES (?, ?, ?, ?)
         """
-
+        timestamp = datetime.now()
         values_list = [
-            (row["asset"], row["free"], row["locked"], datetime.now())
+            (row["asset"], row["free"], row["locked"], timestamp)
             for _, row in balance_data.iterrows()
         ]
 
