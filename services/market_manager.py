@@ -9,7 +9,7 @@ from binance.error import ClientError
 from binance.spot import Spot
 
 from services.crypto_market_fetcher import CoinGeckoMarketData
-from services.src.helpers import configure_logger
+from services.src.helpers import configure_logger, load_config
 from services.src.market_manager_helper import BinanceManagerHelper
 
 
@@ -36,13 +36,11 @@ class BinanceManager:
     A manager class for interacting with the Binance Spot API.
 
     Attributes:
-        MIN_TRADE_AMOUNT (float): Minimum trade amount in USDT.
+        min_trade_amount (float): Minimum trade amount in USDT.
         client (Spot): Binance API client.
         logger (Logger): Logger for logging Binance API interactions.
         manager_helper (BinanceManagerHelper): Helper class for Binance operations.
     """
-
-    MIN_TRADE_AMOUNT = 15.0  # Fixed minimum trade amount in USDT
 
     def __init__(self, api_key: str, api_secret: str):
         """
@@ -52,13 +50,21 @@ class BinanceManager:
             api_key (str): Binance API key.
             api_secret (str): Binance API secret.
         """
+        config = load_config().get("binance", {})
+        self.min_trade_amount = config.get("min_trade_amount")
+
+        if self.min_trade_amount is None:
+            raise ValueError(
+                "Configuration error: 'min_trade_amount' is missing in config.yaml"
+            )
+
         self.client = Spot(api_key=api_key, api_secret=api_secret)
         self.logger = configure_logger(__name__)
 
         self.manager_helper = BinanceManagerHelper(
             exchange_info=self.exchange_info,
             logger=self.logger,
-            min_trade_amount=self.MIN_TRADE_AMOUNT,
+            min_trade_amount=self.min_trade_amount,
         )
 
     @property

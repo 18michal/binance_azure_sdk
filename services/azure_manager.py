@@ -10,7 +10,7 @@ from azure.keyvault.secrets import SecretClient
 from pandas import DataFrame
 from pyodbc import Connection, Error, connect  # pylint: disable=E0611
 
-from services.src.helpers import configure_logger
+from services.src.helpers import configure_logger, load_config
 
 
 class AzureKeyVaultManager:
@@ -24,6 +24,7 @@ class AzureKeyVaultManager:
         kv_name (str): The name of the Azure Key Vault.
         kv_url (str): The full URL of the Azure Key Vault.
         credential (DefaultAzureCredential): The authentication credential used to access the vault.
+        logger (Logger): Logger for logging Binance API interactions.
 
     Methods:
         get_secret(secret_object_name: str) -> Optional[str]:
@@ -75,12 +76,10 @@ class AzureDatabaseManager:
     in various tables of the database.
 
     Attributes:
-        DRIVER (str): The ODBC driver used for database connections.
-        SQL_DATABASE (str): The name of the SQL database.
+        driver (str): The ODBC driver used for database connections.
+        sql_database (str): The name of the SQL database.
+        logger (Logger): Logger for logging Binance API interactions.
     """
-
-    DRIVER = "{ODBC Driver 18 for SQL Server}"
-    SQL_DATABASE = "CryptoDB"
 
     def __init__(self, key_vault: AzureKeyVaultManager):
         """
@@ -92,6 +91,15 @@ class AzureDatabaseManager:
         Raises:
             ValueError: If any of the required database credentials are missing.
         """
+        config = load_config().get("azure_database", {})
+        self.driver = config.get("driver")
+        self.sql_database = config.get("sql_database")
+
+        if self.driver is None or self.sql_database is None:
+            raise ValueError(
+                "Configuration error: azure_database values missing in config.yaml"
+            )
+
         self.kv_config = key_vault
         self.logger = configure_logger(__name__)
 
@@ -240,7 +248,7 @@ class AzureDatabaseManager:
             ConnectionError: If the connection to the database fails.
         """
         try:
-            conn_str = f"DRIVER={self.DRIVER};SERVER={self.server};DATABASE={self.SQL_DATABASE};UID={self.sql_username};PWD={self.sql_password}"  # pylint: disable=C0301
+            conn_str = f"DRIVER={self.driver};SERVER={self.server};DATABASE={self.sql_database};UID={self.sql_username};PWD={self.sql_password}"  # pylint: disable=C0301
             conn = connect(conn_str)
             return conn
         except Error as e:

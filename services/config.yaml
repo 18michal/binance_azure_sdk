@@ -1,0 +1,6 @@
+azure_database:
+  driver: "{ODBC Driver 18 for SQL Server}"
+  sql_database: "CryptoDB"
+
+binance:
+  min_trade_amount: 15.0 # Fixed minimum trade amount in USDT
