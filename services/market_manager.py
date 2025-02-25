@@ -317,7 +317,7 @@ class BinanceManager:
         symbol: str,
         start_time: Optional[int] = None,
         end_time: Optional[int] = None,
-    ) -> pd.DataFrame:
+    ) -> pd.DataFrame | None:
         """
         Fetches trade history for a given symbol within a specified time range.
         If no time range is provided, it fetches trades without any time constraints.
@@ -365,6 +365,8 @@ class BinanceManager:
                         "isBuyer": trade["isBuyer"],
                     }
                 )
+        else:
+            return None
 
         return pd.DataFrame(trades_list)
 
@@ -392,7 +394,7 @@ class BinanceManager:
             for symbol in symbols
         ]
 
-        if not trade_list:
+        if not trade_list[0]:
             self.logger.info("No trades within 24 hours found.")
             return pd.DataFrame()
 

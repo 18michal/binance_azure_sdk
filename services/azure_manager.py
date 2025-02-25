@@ -284,7 +284,7 @@ class AzureDatabaseManager:
                     cursor.execute(query, values)
                 conn.commit()
         except Error as e:
-            self.logger.error("Error executing query.")
+            self.logger.error("Error executing query. %s", e)
             raise RuntimeError("Error executing database query.") from e
         finally:
             self.logger.info("Query executed successfully on table: %s", table_name)
