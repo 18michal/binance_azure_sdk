@@ -2,7 +2,7 @@ from typing import Any
 
 from requests import RequestException, get
 
-from services.helpers import configure_logger
+from services.src.helpers import configure_logger
 
 
 class CoinGeckoMarketData:
