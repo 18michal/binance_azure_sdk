@@ -39,6 +39,8 @@ class AzureKeyVaultManager:
         self.credential = DefaultAzureCredential()
         self.logger = configure_logger(__name__)
 
+        self.client = SecretClient(vault_url=self.kv_url, credential=self.credential)
+
     def get_secret(self, secret_object_name: str) -> Optional[str]:
         """
         Retrieves a secret from Azure Key Vault.
@@ -53,8 +55,7 @@ class AzureKeyVaultManager:
             ResourceNotFoundError: If the specified secret does not exist in the Key Vault.
         """
         try:
-            client = SecretClient(vault_url=self.kv_url, credential=self.credential)
-            secret = client.get_secret(secret_object_name)
+            secret = self.client.get_secret(secret_object_name)
             return secret.value
         except ResourceNotFoundError as e:
             self.logger.error("Error retrieving secret %s.\n %s", secret_object_name, e)
