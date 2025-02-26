@@ -3,11 +3,11 @@ A modular SDK for automating cryptocurrency trading using **Binance API**, **Coi
 
 ## Overview
 This SDK provides:<br>
-✅ Secure retrieval of secrets (API keys) from Azure Key Vault.<br>
+✅ Secure retrieval of secrets (API keys) from Azure Key Vault.
 ✅ Real-time cryptocurrency price tracking using Binance API and CoinGecko API.
 ✅ Trading operations (buy/sell orders, wallet balance checks) using Binance API.
 ✅ Database storage for historical price data, trade history, and portfolio balances in Azure SQL.
-✅ A logging system for debugging & tracking.<br>
+✅ Automatic retries & logging for robust execution.
 ✅ Unit tests for validating Key Vault and Binance API interactions.
 
 ## Prerequisites
@@ -49,14 +49,39 @@ This SDK provides:<br>
     ```
     👉 **Important:** Never share `.env` files or commit them to Git!
 
-## SDK Modules
-| Module    | Description |
-| -------- | ------- |
-| services/azure_manager.py | Handles secure retrieval of API keys from Azure Key Vault. |
-| services/src/helpers.py | Configures logging system for debugging & tracking. |
-| services/market_manager.py | Handles Binance API interactions (trades, balances, orders). |
-| services/src/market_manager_helper.py | Helper functions for Binance trading logic. |
-| services/crypto_market_fetcher.py | Fetches data about top 100 Cryptocurrencies from CoinGecko API. |
+## SDK Modules & Classes
+1. Modules
+    | Module    | Description |
+    | -------- | ------- |
+    | services/azure_manager.py | Handles secure retrieval of API keys from Azure Key Vault. |
+    | services/market_manager.py | Handles Binance API interactions (trades, balances, orders). |
+    | services/crypto_market_fetcher.py | Fetches data about top 100 Cryptocurrencies from CoinGecko API. |
+    | services/src/helpers.py | Configures logging system for debugging & tracking. |
+    | services/src/market_manager_helper.py | Helper functions for Binance trading logic. |
+
+2. Class Azure Services - azure_manager.py
+    - `AzureKeyVaultManager` Manages retrieval of secrets (API keys, database credentials) from Azure Key Vault:
+        - Securely fetches API keys
+        - Handles errors & logging
+    - `AzureDatabaseManager` Manages connection to Azure SQL, storing & retrieving trade history, portfolio balances, and market data:
+        - Inserts data
+        - Fetches portfolio balances
+        - Deletes old records
+
+
+3. Class Binance Trading - market_manager.py
+    `BinanceManager` Handles all interactions with Binance API, including fetching wallet balances, market data, and placing trades:
+    - Fetches real-time prices
+    - Retrieves account type
+    - Checks open orders
+    - Places buy/sell orders
+    - Cancels orders
+
+4. Class Market Data (CoinGecko API) - crypto_market_fetcher.py
+    `CoinGeckoMarketData` Fetches real-time cryptocurrency market data from CoinGecko API:
+    - Retrieves top 100 cryptocurrencies
+    - Cleans and structures data
+    - Handles API rate limits
 
 ## Database Schema (Azure SQL)
 Before using the SDK, create the following tables in Azure SQL Database:
