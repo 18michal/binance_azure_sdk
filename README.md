@@ -5,12 +5,12 @@ A modular SDK for automating cryptocurrency trading using **Binance API**, **Coi
 
 ## Overview
 This SDK provides:<br>
-✅ Secure retrieval of secrets (API keys) from Azure Key Vault.
-✅ Real-time cryptocurrency price tracking using Binance API and CoinGecko API.
-✅ Trading operations (buy/sell orders, wallet balance checks) using Binance API.
-✅ Database storage for historical price data, trade history, and portfolio balances in Azure SQL.
-✅ Automatic retries & logging for robust execution.
-✅ Unit tests for validating API & database interactions.
+✅ Secure retrieval of secrets (API keys) from Azure Key Vault.<br>
+✅ Real-time cryptocurrency price tracking using Binance API and CoinGecko API.<br>
+✅ Trading operations (buy/sell orders, wallet balance checks) using Binance API.<br>
+✅ Database storage for historical price data, trade history, and portfolio balances in Azure SQL.<br>
+✅ Automatic retries & logging for robust execution.<br>
+✅ Unit tests for validating API & database interactions.<br>
 
 ## Prerequisites
 1. **Azure Setup**
@@ -80,7 +80,7 @@ This SDK provides:<br>
         - Deletes old records
 
 
-3. Class Binance Trading - market_manager.py
+3. Class Binance Trading - market_manager.py<br>
     `BinanceManager` Handles all interactions with Binance API, including fetching wallet balances, market data, and placing trades:
     - Fetches real-time prices
     - Retrieves account type
@@ -88,7 +88,7 @@ This SDK provides:<br>
     - Places buy/sell orders
     - Cancels orders
 
-4. Class Market Data (CoinGecko API) - crypto_market_fetcher.py
+4. Class Market Data (CoinGecko API) - crypto_market_fetcher.py<br>
     `CoinGeckoMarketData` Fetches real-time cryptocurrency market data from CoinGecko API:
     - Retrieves top 100 cryptocurrencies
     - Cleans and structures data
@@ -98,9 +98,9 @@ This SDK provides:<br>
 Before using the SDK, create the following tables in Azure SQL Database:
 - Portfolio Balance Table (Portfolio_Balance)
 - Trade History Table (Trade_History)
-- (Market Capitalization History Table) Market_Capitalization_History
+- Market Capitalization History Table (Market_Capitalization_History)
 
-This schema is available to copy and use here: `examples/databse_table_creation.sql`
+This schema is available to copy and use here: `examples/databse_table_creation.sql`<br>
 Conection to the database is based on the sql user and password.
 
 ## Running Code & Tests tip
@@ -117,6 +117,6 @@ Conection to the database is based on the sql user and password.
 Instead of using Azure Functions, Virtual Network and assign a static ip (which can be expensive), I recommend using a Raspberry Pi for scheduling tasks.
 
 ## Support This Project – Sign Up for Binance Using My Referral
-If you find this project useful and don’t have a Binance account yet, please support my work by using my referral link!
-🔗 [Binance Referral Link](https://www.binance.com/activity/referral-entry/CPA?ref=CPA_00FXDN66MY)
+If you find this project useful and don’t have a Binance account yet, please support my work by using my referral link!<br>
+🔗 [Binance Referral Link](https://www.binance.com/activity/referral-entry/CPA?ref=CPA_00FXDN66MY)<br>
 🆔 [Referral ID](CPA_00FXDN66MY)
