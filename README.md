@@ -1,6 +1,8 @@
 # Automated Cryptocurrency Trading SDK
 A modular SDK for automating cryptocurrency trading using **Binance API**, **CoinGecko** and **Azure services** (Key Vault & SQL Database).
 
+👉 It does not have a main.py file but instead provides usage examples in the examples/ folder.
+
 ## Overview
 This SDK provides:<br>
 ✅ Secure retrieval of secrets (API keys) from Azure Key Vault.
@@ -8,7 +10,7 @@ This SDK provides:<br>
 ✅ Trading operations (buy/sell orders, wallet balance checks) using Binance API.
 ✅ Database storage for historical price data, trade history, and portfolio balances in Azure SQL.
 ✅ Automatic retries & logging for robust execution.
-✅ Unit tests for validating Key Vault and Binance API interactions.
+✅ Unit tests for validating API & database interactions.
 
 ## Prerequisites
 1. **Azure Setup**
@@ -27,7 +29,18 @@ This SDK provides:<br>
     - Create a Binance Subaccount: [Guide](https://www.binance.com/en/support/faq/binance-sub-account-functions-and-frequently-asked-questions-360020632811)
     - Binance Connector API Documentation: [Read the Docs](https://binance-connector.readthedocs.io/en/latest/index.html)
 
-3. **Environment Variables (.env file)**
+3. **Configuration File (`config.yaml`)**
+    Before running the script, update the config.yaml file with your database and Binance trading settings:
+    ```yaml
+    azure_database:
+    driver: "{ODBC Driver 18 for SQL Server}"
+    sql_database: "CryptoDB"
+
+    binance:
+    min_trade_amount: 15.0 # Fixed minimum trade amount in USDT
+    ```
+
+4. **Environment Variables (.env file)**
     Before running the code localy, create a `.env` file in the project root and add:
     ```bash
     AZURE_CLIENT_ID="your-client-id"
@@ -35,7 +48,6 @@ This SDK provides:<br>
     AZURE_CLIENT_SECRET="your-client-secret"
     AZURE_VAULT_URL="https://your-keyvault-name.vault.azure.net"
     AZURE_VAULT_NAME="your-keyvault-name"
-    SECRET_OBJECT_NAME="your-secret-name"
 
     # Binance Credentials (Stored in Azure Key Vault)
     BINANCE_API_KEY="BINANCE_API_KEY"
@@ -43,7 +55,6 @@ This SDK provides:<br>
 
     # Azure SQL Database Credentials (Stored in Azure Key Vault)
     AZURE_SQL_SERVER="your-sql-server.database.windows.net"
-    AZURE_SQL_DATABASE="CryptoDB"
     AZURE_SQL_USERNAME="your-username"
     AZURE_SQL_PASSWORD="your-password"
     ```
@@ -101,3 +112,11 @@ Conection to the database is based on the sql user and password.
     ```bash
     python -m pytest tests/test_azure_database_manager.py
     ```
+
+## Recommended Setup: Raspberry Pi for Cost Efficiency
+Instead of using Azure Functions, Virtual Network and assign a static ip (which can be expensive), I recommend using a Raspberry Pi for scheduling tasks.
+
+## Support This Project – Sign Up for Binance Using My Referral
+If you find this project useful and don’t have a Binance account yet, please support my work by using my referral link!
+🔗 [Binance Referral Link](https://www.binance.com/activity/referral-entry/CPA?ref=CPA_00FXDN66MY)
+🆔 [Referral ID](CPA_00FXDN66MY)
