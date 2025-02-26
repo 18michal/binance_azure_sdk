@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "binance-azure-integration-sdk"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+azure-keyvault-secrets = "^4.9.0"
+azure-identity = "^1.19.0"
+binance-connector = "^3.12.0"
+pandas = "^2.2.3"
+pyodbc = "^5.2.0"
+tenacity = "^9.0.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^4.1.0"
+black = "^24.10.0"
+isort = "^6.0.0"
+python-dotenv = "^1.0.1"
+pytest = "^8.3.4"
+pytest-mock = "^3.14.0"
+ipykernel = "^6.29.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
