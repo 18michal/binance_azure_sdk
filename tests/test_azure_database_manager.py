@@ -110,18 +110,22 @@ def test_fetch_query_failure(mock_connect, db_manager):
 @patch("services.azure_manager.AzureDatabaseManager._execute_query")
 def test_insert_trade(mock_execute_query, db_manager):
     """Test inserting a trade record"""
-    trade_data = {
-        "order_id": "12345",
-        "symbol": "BTCUSDT",
-        "side": "BUY",
-        "order_type": "LIMIT",
-        "price": 50000.0,
-        "quantity": 0.1,
-        "status": "FILLED",
-        "executed_qty": 0.1,
-        "stop_price": 49000.0,
-        "timestamp": datetime.now(),
-    }
+
+    trade_data = DataFrame(
+        [
+            {
+                "orderId": "12345",
+                "symbol": "BTCUSDT",
+                "price": 50000.0,
+                "qty": 0.1,
+                "quoteQty": 5000.0,
+                "commission": 10.0,
+                "commissionAsset": "USDT",
+                "isBuyer": "BUY",
+                "time": datetime.now(),
+            }
+        ]
+    )
 
     db_manager.insert_trade(trade_data)
     mock_execute_query.assert_called_once()
@@ -130,17 +134,20 @@ def test_insert_trade(mock_execute_query, db_manager):
 @patch("services.azure_manager.AzureDatabaseManager._execute_query")
 def test_insert_market_history(mock_execute_query, db_manager):
     """Test inserting market history data"""
-    market_data = {
-        "market_cap_rank": 1,
-        "name": "Bitcoin",
-        "symbol": "BTC",
-        "price": 50000.0,
-        "price_high": 51000.0,
-        "price_low": 49000.0,
-        "market_cap": 900000000000.0,
-        "is_available_on_binance": True,
-        "timestamp": datetime.now(),
-    }
+
+    market_data = [
+        {
+            "market_cap_rank": 1,
+            "name": "Bitcoin",
+            "symbol": "BTC",
+            "current_price": 50000.0,
+            "high_24h": 51000.0,
+            "low_24h": 49000.0,
+            "market_cap": 900000000000.0,
+            "is_available_on_binance": True,
+            "last_updated": datetime.now(),
+        }
+    ]
 
     db_manager.insert_market_history(market_data)
     mock_execute_query.assert_called_once()
@@ -158,7 +165,7 @@ def test_insert_portfolio_balance(mock_execute_query, db_manager):
     )
 
     db_manager.insert_portfolio_balance(balance_data)
-    assert mock_execute_query.call_count == 2
+    mock_execute_query.assert_called_once()
 
 
 @patch("services.azure_manager.AzureDatabaseManager._execute_query")

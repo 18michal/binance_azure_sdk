@@ -9,7 +9,7 @@ from services.market_manager import BinanceManager
 @pytest.fixture
 def binance_manager():
     """Fixture to create a BinanceManager instance with a mocked Binance Spot client."""
-    with patch("src.market_manager.Spot") as mock_spot:
+    with patch("services.market_manager.Spot") as mock_spot:
         mock_client = mock_spot.return_value
         mock_client.account.return_value = {
             "accountType": "SPOT",

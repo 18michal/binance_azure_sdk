@@ -1,4 +1,23 @@
+""" Helper functions for the services module. """
+
 import logging
+import os
+
+import yaml
+
+
+def load_config():
+    """Loads configuration from a YAML file."""
+
+    config_path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "../config.yaml")
+    )
+
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"Configuration file not found: {config_path}")
+
+    with open(config_path, "r", encoding="utf-8") as file:
+        return yaml.safe_load(file)
 
 
 def configure_logger(name: str) -> logging.Logger:

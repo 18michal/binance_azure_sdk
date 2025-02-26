@@ -1,3 +1,5 @@
+""" Example script to sync Binance data with Azure Database. """
+
 import os
 
 from dotenv import load_dotenv
@@ -16,6 +18,7 @@ RETRY_POLICY = retry(
 def insert_portfolio_balance(
     database_manager: AzureDatabaseManager, balance_data: DataFrame
 ) -> None:
+    """Insert query into Azure Database."""
     database_manager.insert_portfolio_balance(balance_data=balance_data)
 
 
@@ -23,11 +26,13 @@ def insert_portfolio_balance(
 def insert_market_history(
     database_manager: AzureDatabaseManager, market_data_list: list
 ) -> None:
+    """Insert query into Azure Database."""
     database_manager.insert_market_history(market_data_list=market_data_list)
 
 
 @RETRY_POLICY
 def insert_trade(database_manager: AzureDatabaseManager, trade_data: DataFrame) -> None:
+    """Insert query into Azure Database."""
     database_manager.insert_trade(trade_data=trade_data)
 
 
