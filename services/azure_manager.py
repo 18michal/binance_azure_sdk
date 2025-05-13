@@ -211,6 +211,28 @@ class AzureDatabaseManager:
 
         self._execute_query(query=query, values=values_list, many=True)
 
+    def insert_daily_high_price(self, high_price_data: list[dict[str, str | float]]):
+        """
+        Inserts daily high price data into the Daily_High_Price table.
+
+        Args:
+            high_price_data (list[dict]): A list of dictionaries with keys:
+                - asset (str): The name of the asset.
+                - high_price (float): The high price of the asset.
+        """
+
+        query = """
+        INSERT INTO Daily_High_Price (asset, high_price, timestamp)
+        VALUES (?, ?, ?)
+        """
+        timestamp = datetime.now()
+
+        values_list = [
+            (row["asset"], row["high_price"], timestamp) for row in high_price_data
+        ]
+
+        self._execute_query(query=query, values=values_list, many=True)
+
     def delete_old_trades(self):
         """
         Deletes trade records older than one year from the Trade_History table.
