@@ -407,3 +407,58 @@ class BinanceManager:
             if s["symbol"] == symbol:
                 return s
         return None
+
+    @handle_binance_manager_errors
+    def get_yesterdays_high_price(self, symbol: str) -> float:
+        """
+        Fetches the high price of the previous day for a given symbol from the Binance API.
+
+        Args:
+            symbol (str): The trading pair symbol (e.g., "BTCUSDT") to retrieve the high price for.
+
+        Returns:
+            float: The high price of the previous day for the specified trading pair.
+        """
+        now = datetime.now(timezone.utc)
+        yesterday = now - timedelta(days=1)
+
+        start_time = datetime(
+            yesterday.year, yesterday.month, yesterday.day, tzinfo=timezone.utc
+        )
+        end_time = start_time + timedelta(days=1)
+
+        klines = self._get_yesterdays_price(
+            symbol=symbol,
+            start_time=start_time,
+            end_time=end_time,
+        )
+
+        return float(klines[1])
+
+    @handle_binance_manager_errors
+    def _get_yesterdays_price(
+        self, symbol: str, start_time: datetime, end_time: datetime
+    ) -> list:
+        """
+        Fetches the historical price data for a given symbol from the Binance API
+        for a specific date range, returning the Open, High, Low, and Close (OHLC)
+        prices for that day.
+
+        Args:
+            symbol (str): The trading pair symbol (e.g., "BTCUSDT") to retrieve data for.
+            start_time (datetime): The starting datetime object for the time period.
+            end_time (datetime): The ending datetime object for the time period.
+
+        Returns:
+            list: A list containing the OHLC prices for the specified date.
+                    The list order is [Open, High, Low, Close].
+        """
+        klines = self.client.klines(
+            symbol=symbol,
+            interval="1d",
+            startTime=int(start_time.timestamp() * 1000),
+            endTime=int(end_time.timestamp() * 1000),
+            limit=1,
+        )
+
+        return klines[0][1:5]  # Open, High, Low, Close prices

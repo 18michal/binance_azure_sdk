@@ -43,6 +43,9 @@ def main():
         print("\nOpen Orders:")
         print(binance_manager.get_open_orders())
 
+        print("\nGet yesterday's high price for BTCUSDT:")
+        print(binance_manager.get_yesterdays_high_price(symbol="BTCUSDT"))
+
     except Exception as e:  # pylint: disable=W0718
         print(f"An error occurred: {e}")
 
