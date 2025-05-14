@@ -36,9 +36,10 @@ CREATE TABLE Market_Capitalization_History (
 );
 
 -- DCA Table Helper For Storing The Daily High Price For Each Asset
-CREATE TABLE Daily_High_Price (
+CREATE TABLE Daily_High_Price ( 
     id INT IDENTITY(1,1) PRIMARY KEY,
-    asset VARCHAR(20) NOT NULL,
+    asset VARCHAR(20) NOT NULL UNIQUE,
     high_price FLOAT NOT NULL,
-    timestamp DATETIME NOT NULL,
+    timestamp DATETIME NOT NULL
 );
+

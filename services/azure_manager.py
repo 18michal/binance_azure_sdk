@@ -214,24 +214,25 @@ class AzureDatabaseManager:
     def insert_daily_high_price(self, high_price_data: list[dict[str, str | float]]):
         """
         Inserts daily high price data into the Daily_High_Price table.
+        Before insertion, removes the existing row for the same asset.
 
         Args:
             high_price_data (list[dict]): A list of dictionaries with keys:
                 - asset (str): The name of the asset.
                 - high_price (float): The high price of the asset.
         """
-
-        query = """
-        INSERT INTO Daily_High_Price (asset, high_price, timestamp)
-        VALUES (?, ?, ?)
+        delete_query = "DELETE FROM Daily_High_Price WHERE asset = ?"
+        insert_query = """
+            INSERT INTO Daily_High_Price (asset, high_price, timestamp)
+            VALUES (?, ?, ?)
         """
         timestamp = datetime.now()
 
-        values_list = [
-            (row["asset"], row["high_price"], timestamp) for row in high_price_data
-        ]
-
-        self._execute_query(query=query, values=values_list, many=True)
+        for row in high_price_data:
+            self._execute_query(query=delete_query, values=(row["asset"],))
+            self._execute_query(
+                query=insert_query, values=(row["asset"], row["high_price"], timestamp)
+            )
 
     def delete_old_trades(self):
         """
@@ -294,7 +295,7 @@ class AzureDatabaseManager:
             RuntimeError: If the query execution fails.
         """
         table_name = None
-        match = search(r"INTO\s+([^\s(]+)", query, IGNORECASE)
+        match = search(r"(?:INTO|FROM|UPDATE)\s+([^\s(]+)", query, IGNORECASE)
         if match:
             table_name = match.group(1)
         try:
