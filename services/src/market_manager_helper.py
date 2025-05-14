@@ -116,7 +116,7 @@ class BinanceManagerHelper:
                 usdc_amount,
                 self.min_trade_amount,
             )
-            return True
+            return False
 
         self.logger.info(
             "Order amount %.2f USDC meets the minimum required: %.2f USDC",
