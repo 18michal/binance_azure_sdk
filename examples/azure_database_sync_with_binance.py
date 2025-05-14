@@ -91,7 +91,7 @@ def main():
         wallet = manager_binance.get_wallet_balances()
         top_crypto = manager_binance.fetch_biggest_crypto_data()
         trades = manager_binance.get_trade_history_last_24h()
-        price_btc = manager_binance.get_yesterdays_high_price(symbol="BTCUSDT")
+        price_btc = manager_binance.get_yesterdays_high_price(symbol="BTCUSDC")
 
         insert_portfolio_balance(database_manager=manager_database, balance_data=wallet)
         insert_market_history(

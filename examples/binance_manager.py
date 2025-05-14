@@ -38,13 +38,13 @@ def main():
 
         symbol_to_check = "BTC"
         symbol_checked_bool = binance_manager.check_market_status(symbol_to_check)
-        print(f"Is {symbol_to_check}/USDT tradeable?: {symbol_checked_bool}", end="\n")
+        print(f"Is {symbol_to_check}/USDC tradeable?: {symbol_checked_bool}", end="\n")
 
         print("\nOpen Orders:")
         print(binance_manager.get_open_orders())
 
-        print("\nGet yesterday's high price for BTCUSDT:")
-        print(binance_manager.get_yesterdays_high_price(symbol="BTCUSDT"))
+        print("\nGet yesterday's high price for BTCUSDC:")
+        print(binance_manager.get_yesterdays_high_price(symbol="BTC"))
 
     except Exception as e:  # pylint: disable=W0718
         print(f"An error occurred: {e}")

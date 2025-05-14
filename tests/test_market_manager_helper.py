@@ -12,9 +12,9 @@ def exchange_info():
     """Fixture to provide mock Binance exchange information."""
     return {
         "symbols": [
-            {"baseAsset": "BTC", "quoteAsset": "USDT", "isSpotTradingAllowed": True},
-            {"baseAsset": "ETH", "quoteAsset": "USDT", "isSpotTradingAllowed": True},
-            {"baseAsset": "XRP", "quoteAsset": "USDT", "isSpotTradingAllowed": False},
+            {"baseAsset": "BTC", "quoteAsset": "USDC", "isSpotTradingAllowed": True},
+            {"baseAsset": "ETH", "quoteAsset": "USDC", "isSpotTradingAllowed": True},
+            {"baseAsset": "XRP", "quoteAsset": "USDC", "isSpotTradingAllowed": False},
         ]
     }
 
@@ -31,25 +31,25 @@ def binance_helper(exchange_info, logger):
     return BinanceManagerHelper(exchange_info, logger, min_trade_amount=15.0)
 
 
-def test_is_usdt_spot_trading_allowed(binance_helper):
-    """Test checking if a trading pair supports USDT spot trading."""
-    assert binance_helper.is_usdt_spot_trading_allowed(
-        {"baseAsset": "BTC", "quoteAsset": "USDT", "isSpotTradingAllowed": True}
+def test_is_usdc_spot_trading_allowed(binance_helper):
+    """Test checking if a trading pair supports USDC spot trading."""
+    assert binance_helper.is_usdc_spot_trading_allowed(
+        {"baseAsset": "BTC", "quoteAsset": "USDC", "isSpotTradingAllowed": True}
     )
-    assert not binance_helper.is_usdt_spot_trading_allowed(
-        {"baseAsset": "XRP", "quoteAsset": "USDT", "isSpotTradingAllowed": False}
+    assert not binance_helper.is_usdc_spot_trading_allowed(
+        {"baseAsset": "XRP", "quoteAsset": "USDC", "isSpotTradingAllowed": False}
     )
 
 
 def test_get_binance_coin_symbols(binance_helper):
-    """Test fetching available Binance coin symbols for USDT spot trading."""
+    """Test fetching available Binance coin symbols for USDC spot trading."""
     result = binance_helper.get_binance_coin_symbols()
     assert result == {"btc", "eth"}
 
 
 def test_has_sufficient_funds(binance_helper):
     """Test checking if there are sufficient funds for a trade."""
-    balances = pd.DataFrame({"asset": ["USDT", "BTC"], "free": [50.0, 0.1]})
+    balances = pd.DataFrame({"asset": ["USDC", "BTC"], "free": [50.0, 0.1]})
 
     assert binance_helper.has_sufficient_funds(20.0, balances)
     assert not binance_helper.has_sufficient_funds(100.0, balances)
@@ -65,7 +65,7 @@ def test_validate_trade_limits(binance_helper):
 def test_open_orders_ensure_columns(binance_helper):
     """Test ensuring that all required columns exist in an open orders DataFrame."""
     df = pd.DataFrame(
-        {"symbol": ["BTCUSDT"], "orderId": [123]}
+        {"symbol": ["BTCUSDC"], "orderId": [123]}
     )  # Missing other required columns
 
     updated_df = binance_helper.open_orders_ensure_columns(df)
@@ -93,7 +93,7 @@ def test_open_orders_convert_column_types(binance_helper):
     """Test converting open orders column types (float and datetime conversions)."""
     df = pd.DataFrame(
         {
-            "symbol": ["BTCUSDT"],
+            "symbol": ["BTCUSDC"],
             "price": ["45000"],
             "origQty": ["0.5"],
             "executedQty": ["0.2"],

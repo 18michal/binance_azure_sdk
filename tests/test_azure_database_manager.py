@@ -115,12 +115,12 @@ def test_insert_trade(mock_execute_query, db_manager):
         [
             {
                 "orderId": "12345",
-                "symbol": "BTCUSDT",
+                "symbol": "BTCUSDC",
                 "price": 50000.0,
                 "qty": 0.1,
                 "quoteQty": 5000.0,
                 "commission": 10.0,
-                "commissionAsset": "USDT",
+                "commissionAsset": "USDC",
                 "isBuyer": "BUY",
                 "time": datetime.now(),
             }
@@ -158,7 +158,7 @@ def test_insert_portfolio_balance(mock_execute_query, db_manager):
     """Test inserting portfolio balance data"""
     balance_data = DataFrame(
         {
-            "asset": ["BTC", "USDT"],
+            "asset": ["BTC", "USDC"],
             "free": [0.5, 100.0],
             "locked": [0.1, 0.0],
         }
@@ -178,8 +178,8 @@ def test_delete_old_trades(mock_execute_query, db_manager):
 @patch("services.azure_manager.AzureDatabaseManager._fetch_query")
 def test_get_values_from_table(mock_fetch_query, db_manager):
     """Test retrieving values from a table"""
-    mock_fetch_query.return_value = [("BTCUSDT", "BUY", 50000.0)]
+    mock_fetch_query.return_value = [("BTCUSDC", "BUY", 50000.0)]
 
     result = db_manager.get_values_from_table("Trade_History")
-    assert result == [("BTCUSDT", "BUY", 50000.0)]
+    assert result == [("BTCUSDC", "BUY", 50000.0)]
     mock_fetch_query.assert_called_once_with(query="SELECT * FROM Trade_History")
