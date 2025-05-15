@@ -229,10 +229,22 @@ class AzureDatabaseManager:
         timestamp = datetime.now()
 
         for row in high_price_data:
-            self._execute_query(query=delete_query, values=(row["asset"],))
-            self._execute_query(
-                query=insert_query, values=(row["asset"], row["high_price"], timestamp)
-            )
+            conn = self._connect()
+            try:
+                cursor = conn.cursor()
+                cursor.execute(delete_query, (row["asset"],))
+                cursor.execute(
+                    insert_query, (row["asset"], row["high_price"], timestamp)
+                )
+                conn.commit()  # Commit only if both succeed
+                self.logger.info("Inserted daily high price for asset %s", row["asset"])
+            except Exception as e:  # pylint: disable=W0718
+                conn.rollback()  # Roll back if either fails
+                self.logger.error(
+                    "Failed to update high price for asset %s: {%s}", row["asset"], e
+                )
+            finally:
+                conn.close()
 
     def delete_old_trades(self):
         """
