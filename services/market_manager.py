@@ -294,7 +294,7 @@ class BinanceManager:
             "symbol": symbol,
             "side": side,
             "type": order_type,
-            "quantity": f"{quantity:f}",
+            "quantity": ("%.4f" % quantity),  # pylint: disable=C0209
         }
 
         if order_type == "LIMIT":
@@ -456,7 +456,7 @@ class BinanceManager:
         end_time = start_time + timedelta(days=1)
 
         klines = self._get_yesterdays_price(
-            symbol=symbol + "USDC",
+            symbol=symbol,
             start_time=start_time,
             end_time=end_time,
         )
