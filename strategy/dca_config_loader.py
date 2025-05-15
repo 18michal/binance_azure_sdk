@@ -1,4 +1,4 @@
-""" """
+""" Module to load and manage DCA configuration settings for multiple users. """
 
 from typing import Any, Dict
 
@@ -42,13 +42,13 @@ class DCAConfigLoader:
             with open(self.config_path, "r", encoding="utf-8") as f:
                 config = yaml.safe_load(f)
         except FileNotFoundError:
-            raise FileNotFoundError(
+            raise FileNotFoundError(  # pylint: disable=W0707
                 f"Missing config file at {self.config_path}"
-            )  # pylint: disable=W0707
+            )
         except yaml.YAMLError as e:
-            raise ValueError(
+            raise ValueError(  # pylint: disable=W0707
                 f"Invalid YAML in config file: {e}"
-            )  # pylint: disable=W0707
+            )
         return config
 
     def get_user_config(self, user_id: str) -> Dict[str, Any]:
@@ -59,7 +59,14 @@ class DCAConfigLoader:
         user_config = self.config[user_id]
 
         # Validate essential keys
-        required_fields = ["assets", "amount_usd", "drop_percent", "frequency", "email"]
+        required_fields = [
+            "assets",
+            "amount_usd",
+            "drop_percent",
+            "frequency",
+            "email",
+            "azure_vault",
+        ]
         for field in required_fields:
             if field not in user_config:
                 raise ValueError(f"Missing '{field}' in config for user '{user_id}'")
