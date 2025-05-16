@@ -1,0 +1,13 @@
+user_1:
+  assets:
+    - BTC
+    - ETH
+  amount_usd:
+    BTC: 50
+    ETH: 50
+  drop_percent: 10
+  frequency: monthly
+  email: user1@example.com
+  azure_vault:
+    name: my-key-vault
+    url: https://my-key-vault.vault.azure.net/

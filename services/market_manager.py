@@ -36,7 +36,7 @@ class BinanceManager:
     A manager class for interacting with the Binance Spot API.
 
     Attributes:
-        min_trade_amount (float): Minimum trade amount in USDT.
+        min_trade_amount (float): Minimum trade amount in USDC.
         client (Spot): Binance API client.
         logger (Logger): Logger for logging Binance API interactions.
         manager_helper (BinanceManagerHelper): Helper class for Binance operations.
@@ -95,7 +95,7 @@ class BinanceManager:
         Fetch the current price of the symbol from Binance API.
 
         Args:
-            symbol (str): Trading pair (e.g., BTCUSDT).
+            symbol (str): Trading pair (e.g., BTCUSDC).
 
         Returns:
             float: The current price of the asset.
@@ -157,7 +157,7 @@ class BinanceManager:
     @handle_binance_manager_errors
     def check_market_status(self, symbol_name: str) -> bool:
         """
-        Checks if a cryptocurrency supports USDT spot trading.
+        Checks if a cryptocurrency supports USDC spot trading.
 
         Args:
             symbol_name (str): The base asset symbol (e.g., "BTC").
@@ -167,7 +167,7 @@ class BinanceManager:
         """
         for symbol in self.exchange_info.get("symbols", []):
             if symbol["baseAsset"].lower() == symbol_name.lower():
-                return self.manager_helper.is_usdt_spot_trading_allowed(
+                return self.manager_helper.is_usdc_spot_trading_allowed(
                     symbol_data=symbol
                 )
         return False
@@ -178,7 +178,7 @@ class BinanceManager:
         Cancels an existing order on Binance.
 
         Args:
-            symbol (str): Trading pair (e.g., "BTCUSDT").
+            symbol (str): Trading pair (e.g., "BTCUSDC").
             order_id (int): ID of the order to cancel.
 
         Returns:
@@ -194,7 +194,7 @@ class BinanceManager:
         Fetch all open orders from Binance.
 
         Columns:
-        - symbol: Trading pair (e.g., BTCUSDT)
+        - symbol: Trading pair (e.g., BTCUSDC)
         - orderId: Unique order ID
         - clientOrderId: A field, which can be set by the user,
             in the JSON response for POST /api/v3/order to identify the newly placed order.
@@ -244,7 +244,7 @@ class BinanceManager:
         Place an order on Binance.
 
         Args:
-            symbol (str): Trading pair (e.g., BTCUSDT).
+            symbol (str): Trading pair (e.g., BTCUSDC).
             side (str): Order direction ('BUY' or 'SELL').
             order_type (str): Type of order ('LIMIT', 'MARKET', 'STOP_LOSS_LIMIT', etc.).
             quantity (float): Amount of asset to buy/sell.
@@ -258,17 +258,17 @@ class BinanceManager:
             self.logger.error("Invalid order side: %s", side)
             raise ValueError("Side must be 'BUY' or 'SELL'.")
 
-        usdt_amount = quantity * (
+        usdc_amount = quantity * (
             price if price else self.get_current_symbol_price(symbol=symbol)
         )  # Estimated cost
 
         asset, required_funds = (
-            ("USDT", usdt_amount)
+            ("USDC", usdc_amount)
             if side == "BUY"
             else (
                 symbol.replace(
-                    "USDT", ""
-                ),  # Extract base asset (e.g., BTC from BTCUSDT)
+                    "USDC", ""
+                ),  # Extract base asset (e.g., BTC from BTCUSDC)
                 quantity,  # e.g. Need enough BTC to sell
             )
         )
@@ -282,11 +282,11 @@ class BinanceManager:
                 "asset": asset,
             }
 
-        if not self.manager_helper.validate_trade_limits(usdt_amount=usdt_amount):
+        if not self.manager_helper.validate_trade_limits(usdc_amount=usdc_amount):
             return {
                 "status": "failed",
                 "reason": "trade amount too low",
-                "amount": usdt_amount,
+                "amount": usdc_amount,
             }
 
         # Construct order parameters
@@ -294,7 +294,7 @@ class BinanceManager:
             "symbol": symbol,
             "side": side,
             "type": order_type,
-            "quantity": quantity,
+            "quantity": ("%.4f" % quantity),  # pylint: disable=C0209
         }
 
         if order_type == "LIMIT":
@@ -303,11 +303,11 @@ class BinanceManager:
                 self.logger.error("Price must be specified for LIMIT orders.")
                 raise ValueError()
 
-            order_params["price"] = price
+            order_params["price"] = f"{price:f}"
             order_params["timeInForce"] = "GTC"  # Good-Til-Canceled
 
         # Place the order
-        response = self.client.new_order_test(**order_params)
+        response = self.client.new_order(**order_params)
         self.logger.info("Order placed successfully:\n%s", response)
         return response
 
@@ -323,7 +323,7 @@ class BinanceManager:
         If no time range is provided, it fetches trades without any time constraints.
 
         Args:
-            symbol (str): The trading pair symbol (e.g., "BTCUSDT").
+            symbol (str): The trading pair symbol (e.g., "BTCUSDC").
             start_time (Optional[int]): The start time in milliseconds if provided.
             end_time (Optional[int]): The end time in milliseconds if provided.
 
@@ -384,7 +384,7 @@ class BinanceManager:
 
         balances = self.get_wallet_balances()
         symbols = [
-            f"{row.asset}USDT" for _, row in balances.iterrows() if row.asset != "USDT"
+            f"{row.asset}USDC" for _, row in balances.iterrows() if row.asset != "USDC"
         ]
 
         trade_list = [
@@ -407,3 +407,86 @@ class BinanceManager:
             if s["symbol"] == symbol:
                 return s
         return None
+
+    @handle_binance_manager_errors
+    def was_asset_bought_this_month(self, symbol: str) -> bool:
+        """
+        Check if the asset was bought during the current month.
+
+        Args:
+            symbol (str): The trading pair symbol (e.g., 'BTCUSDC').
+
+        Returns:
+            bool: True if a BUY trade occurred this month, False otherwise.
+        """
+        now = datetime.now(timezone.utc)
+        start_of_month = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
+        start_time_ms = int(start_of_month.timestamp() * 1000)
+
+        trades = self.fetch_symbol_trade_history(
+            symbol=symbol, start_time=start_time_ms
+        )
+
+        if trades is None:
+            return False
+
+        for _, trade in trades.iterrows():
+            if trade["isBuyer"]:  # True indicates it's a BUY trade
+                return True
+
+        return False
+
+    @handle_binance_manager_errors
+    def get_yesterdays_high_price(self, symbol: str) -> float:
+        """
+        Fetches the high price of the previous day for a given symbol from the Binance API.
+
+        Args:
+            symbol (str): The trading pair symbol (e.g., "BTCUSDC") to retrieve the high price for.
+
+        Returns:
+            float: The high price of the previous day for the specified trading pair.
+        """
+        now = datetime.now(timezone.utc)
+        yesterday = now - timedelta(days=1)
+
+        start_time = datetime(
+            yesterday.year, yesterday.month, yesterday.day, tzinfo=timezone.utc
+        )
+        end_time = start_time + timedelta(days=1)
+
+        klines = self._get_yesterdays_price(
+            symbol=symbol,
+            start_time=start_time,
+            end_time=end_time,
+        )
+
+        return float(klines[1])
+
+    @handle_binance_manager_errors
+    def _get_yesterdays_price(
+        self, symbol: str, start_time: datetime, end_time: datetime
+    ) -> list:
+        """
+        Fetches the historical price data for a given symbol from the Binance API
+        for a specific date range, returning the Open, High, Low, and Close (OHLC)
+        prices for that day.
+
+        Args:
+            symbol (str): The trading pair symbol (e.g., "BTCUSDC") to retrieve data for.
+            start_time (datetime): The starting datetime object for the time period.
+            end_time (datetime): The ending datetime object for the time period.
+
+        Returns:
+            list: A list containing the OHLC prices for the specified date.
+                    The list order is [Open, High, Low, Close].
+        """
+        klines = self.client.klines(
+            symbol=symbol,
+            interval="1d",
+            startTime=int(start_time.timestamp() * 1000),
+            endTime=int(end_time.timestamp() * 1000),
+            limit=1,
+        )
+
+        return klines[0][1:5]  # Open, High, Low, Close prices

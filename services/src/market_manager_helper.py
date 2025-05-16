@@ -13,7 +13,7 @@ class BinanceManagerHelper:
     Attributes:
         exchange_info (dict): Exchange information obtained from the Binance API.
         logger (Logger): Logger instance for logging messages.
-        min_trade_amount (float): Minimum trade amount (USDT) required for Binance trades.
+        min_trade_amount (float): Minimum trade amount (USDC) required for Binance trades.
     """
 
     def __init__(self, exchange_info: dict, logger: Logger, min_trade_amount: float):
@@ -31,10 +31,10 @@ class BinanceManagerHelper:
 
     def get_binance_coin_symbols(self) -> set[str]:
         """
-        Retrieves a set of all available Binance coin symbols that support USDT spot trading.
+        Retrieves a set of all available Binance coin symbols that support USDC spot trading.
 
         Returns:
-            set[str]: A set of coin symbols available for USDT spot trading.
+            set[str]: A set of coin symbols available for USDC spot trading.
 
         Raises:
             ValueError: If the 'symbols' key is missing in the exchange_info dictionary.
@@ -45,28 +45,28 @@ class BinanceManagerHelper:
         symbols = {
             symbol["baseAsset"].lower()
             for symbol in self.exchange_info["symbols"]
-            if self.is_usdt_spot_trading_allowed(symbol)
+            if self.is_usdc_spot_trading_allowed(symbol)
         }
 
         self.logger.info("Successfully fetched exchange symbols from Binance API.")
         return symbols
 
-    def is_usdt_spot_trading_allowed(self, symbol_data: dict) -> bool:
+    def is_usdc_spot_trading_allowed(self, symbol_data: dict) -> bool:
         """
-        Checks if a given trading pair supports USDT spot trading.
+        Checks if a given trading pair supports USDC spot trading.
 
         Args:
             symbol_data (dict): A dictionary containing trading pair information.
 
         Returns:
-            bool: True if the pair allows USDT spot trading, False otherwise.
+            bool: True if the pair allows USDC spot trading, False otherwise.
         """
-        return symbol_data.get("quoteAsset") == "USDT" and symbol_data.get(
+        return symbol_data.get("quoteAsset") == "USDC" and symbol_data.get(
             "isSpotTradingAllowed", False
         )
 
     def has_sufficient_funds(
-        self, amount: float, balances: pd.DataFrame, asset: str = "USDT"
+        self, amount: float, balances: pd.DataFrame, asset: str = "USDC"
     ) -> bool:
         """
         Checks if there are enough free funds in the wallet to execute a trade.
@@ -74,7 +74,7 @@ class BinanceManagerHelper:
         Args:
             amount (float): The required amount for the trade.
             balances (pd.DataFrame): DataFrame containing columns like 'asset' and 'free'.
-            asset (str, optional): The asset symbol to check funds for. Defaults to "USDT".
+            asset (str, optional): The asset symbol to check funds for. Defaults to "USDC".
 
         Returns:
             bool: True if sufficient funds are available, False otherwise.
@@ -100,27 +100,27 @@ class BinanceManagerHelper:
         self.logger.info("Sufficient funds: %.6f %s available", free_balance, asset)
         return True
 
-    def validate_trade_limits(self, usdt_amount: float) -> bool:
+    def validate_trade_limits(self, usdc_amount: float) -> bool:
         """
         Validates whether a trade amount meets the Binance minimum trade requirement.
 
         Args:
-            usdt_amount (float): The trade amount in USDT.
+            usdc_amount (float): The trade amount in USDC.
 
         Returns:
             bool: True if the trade amount meets the minimum requirement, False otherwise.
         """
-        if usdt_amount < self.min_trade_amount:
+        if usdc_amount < self.min_trade_amount:
             self.logger.warning(
-                "Order amount %.2f USDT is below minimum required: %.2f USDT",
-                usdt_amount,
+                "Order amount %.2f USDC is below minimum required: %.2f USDC",
+                usdc_amount,
                 self.min_trade_amount,
             )
             return False
 
         self.logger.info(
-            "Order amount %.2f USDT meets the minimum required: %.2f USDT",
-            usdt_amount,
+            "Order amount %.2f USDC meets the minimum required: %.2f USDC",
+            usdc_amount,
             self.min_trade_amount,
         )
         return True

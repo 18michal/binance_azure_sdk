@@ -211,6 +211,41 @@ class AzureDatabaseManager:
 
         self._execute_query(query=query, values=values_list, many=True)
 
+    def insert_daily_high_price(self, high_price_data: list[dict[str, str | float]]):
+        """
+        Inserts daily high price data into the Daily_High_Price table.
+        Before insertion, removes the existing row for the same asset.
+
+        Args:
+            high_price_data (list[dict]): A list of dictionaries with keys:
+                - asset (str): The name of the asset.
+                - high_price (float): The high price of the asset.
+        """
+        delete_query = "DELETE FROM Daily_High_Price WHERE asset = ?"
+        insert_query = """
+            INSERT INTO Daily_High_Price (asset, high_price, timestamp)
+            VALUES (?, ?, ?)
+        """
+        timestamp = datetime.now()
+
+        for row in high_price_data:
+            conn = self._connect()
+            try:
+                cursor = conn.cursor()
+                cursor.execute(delete_query, (row["asset"],))
+                cursor.execute(
+                    insert_query, (row["asset"], row["high_price"], timestamp)
+                )
+                conn.commit()  # Commit only if both succeed
+                self.logger.info("Inserted daily high price for asset %s", row["asset"])
+            except Exception as e:  # pylint: disable=W0718
+                conn.rollback()  # Roll back if either fails
+                self.logger.error(
+                    "Failed to update high price for asset %s: {%s}", row["asset"], e
+                )
+            finally:
+                conn.close()
+
     def delete_old_trades(self):
         """
         Deletes trade records older than one year from the Trade_History table.
@@ -272,7 +307,7 @@ class AzureDatabaseManager:
             RuntimeError: If the query execution fails.
         """
         table_name = None
-        match = search(r"INTO\s+([^\s(]+)", query, IGNORECASE)
+        match = search(r"(?:INTO|FROM|UPDATE)\s+([^\s(]+)", query, IGNORECASE)
         if match:
             table_name = match.group(1)
         try:

@@ -3,4 +3,4 @@ azure_database:
   sql_database: "CryptoDB"
 
 binance:
-  min_trade_amount: 15.0 # Fixed minimum trade amount in USDT
+  min_trade_amount: 15.0 # Fixed minimum trade amount in USDC
