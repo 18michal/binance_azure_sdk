@@ -64,7 +64,8 @@ class DCAConfigLoader:
             "amount_usd",
             "drop_percent",
             "frequency",
-            "email",
+            "email_to",
+            "email_from",
             "azure_vault",
         ]
         for field in required_fields:

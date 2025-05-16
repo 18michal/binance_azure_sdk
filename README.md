@@ -10,6 +10,7 @@ This SDK provides:<br>
 ✅ Trading operations (buy/sell orders, wallet balance checks) using Binance API.<br>
 ✅ Database storage for historical price data, trade history, and portfolio balances in Azure SQL.<br>
 ✅ Flexible DCA (Dollar-Cost Averaging) strategy per user, based on configurable drop thresholds.<br>
+✅Notification System – Email Alerts & Portfolio Reporting.<br>
 ✅ Automatic retries & logging for robust execution.<br>
 ✅ Unit tests for validating API & database interactions.<br>
 
@@ -21,6 +22,7 @@ The SDK project contains **rule-based DCA (Dollar-Cost Averaging)** crypto strat
 ### 📁 Folder Structure – Strategy
 ```bash
 strategy/
+├── dca_config_loader.py     # User strategy configuration file
 ├── dca_config_loader.py     # Loads and validates user strategy config
 ├── dca_strategy.py          # Core logic for running user-defined DCA strategy
 └── src/
@@ -28,6 +30,20 @@ strategy/
     ├── binance_trading.py   # Simplified Binance order execution helpers
     ├── dates.py             # Date range helpers (e.g., month start, today)
     └── setup.py             # Initializes Azure and Binance manager objects
+```
+
+## Notification System – Email Alerts & Portfolio Reporting
+To keep users informed and in control, this SDK includes a modular notification system via gmail.<br>
+It’s designed to send automatic alerts about low balances and portfolio performance.
+
+### 📁 Folder Structure – Strategy
+```bash
+services/
+└── notification/
+    ├── base_notifier.py             # Base class for sending messages (gmail)
+    ├── wallet_balance_notifier.py   # Sends alert if available funds drop below configured threshold
+    └── portfolio_reporter.py        # Generates and sends portfolio summary to the user
+
 ```
 
 ## Prerequisites

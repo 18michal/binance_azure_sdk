@@ -259,7 +259,7 @@ class AzureDatabaseManager:
         self._execute_query(query=query, values=values)
         self.logger.info("Deleted trades older than one year.")
 
-    def get_values_from_table(self, table_name: str):
+    def get_values_from_table(self, table_name: str) -> list:
         """
         Retrieves all records from the specified table.
 
@@ -267,7 +267,7 @@ class AzureDatabaseManager:
             table_name (str): The name of the table to retrieve data from.
 
         Returns:
-            List[tuple]: A list of tuples representing the table's rows.
+            list[pyodbc.Row]: A list of pyodbc.Row (tuple-like object).
         """
         query = f"SELECT * FROM {table_name}"
         return self._fetch_query(query=query)
