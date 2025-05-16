@@ -13,7 +13,7 @@ class DCAConfigLoader:
     The configuration file is expected to contain user-specific DCA strategies.
     """
 
-    def __init__(self, config_path: str = "data/config.yaml"):
+    def __init__(self, config_path: str = "strategy/config.yaml"):
         """
         Initializes the DCAConfigLoader.
 

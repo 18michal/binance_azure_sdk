@@ -5,7 +5,7 @@ user_1:
   amount_usd:
     BTC: 50
     ETH: 50
-  drop_percent: 10
+  drop_percent: 0.10
   frequency: monthly
   email: user1@example.com
   azure_vault:
