@@ -9,8 +9,26 @@ This SDK provides:<br>
 ✅ Real-time cryptocurrency price tracking using Binance API and CoinGecko API.<br>
 ✅ Trading operations (buy/sell orders, wallet balance checks) using Binance API.<br>
 ✅ Database storage for historical price data, trade history, and portfolio balances in Azure SQL.<br>
+✅ Flexible DCA (Dollar-Cost Averaging) strategy per user, based on configurable drop thresholds.<br>
 ✅ Automatic retries & logging for robust execution.<br>
 ✅ Unit tests for validating API & database interactions.<br>
+
+## Strategy Layer – Rule-Based DCA Automation
+The SDK project contains **rule-based DCA (Dollar-Cost Averaging)** crypto strategy with user-level configuration. The goal is to give each user control over their trading parameters and allow for low-cost, scheduled automation via **Raspberry Pi**.
+
+⚠️ **Note:** The actual logic in dca_strategy.py is intentionally left minimal to give users flexibility in defining their own strategy logic. This keeps the SDK reusable and not opinionated.
+
+### 📁 Folder Structure – Strategy
+```bash
+strategy/
+├── dca_config_loader.py     # Loads and validates user strategy config
+├── dca_strategy.py          # Core logic for running user-defined DCA strategy
+└── src/
+    ├── azure_sql.py         # Interacts with Azure SQL (e.g., price history, trade logs)
+    ├── binance_trading.py   # Simplified Binance order execution helpers
+    ├── dates.py             # Date range helpers (e.g., month start, today)
+    └── setup.py             # Initializes Azure and Binance manager objects
+```
 
 ## Prerequisites
 1. **Azure Setup**
@@ -37,7 +55,7 @@ This SDK provides:<br>
     sql_database: "CryptoDB"
 
     binance:
-    min_trade_amount: 15.0 # Fixed minimum trade amount in USDT
+    min_trade_amount: 15.0 # Fixed minimum trade amount in USDC
     ```
 
 4. **Environment Variables (.env file)**
@@ -87,6 +105,7 @@ This SDK provides:<br>
     - Checks open orders
     - Places buy/sell orders
     - Cancels orders
+    - Gets the yesterdays price for requested asset
 
 4. Class Market Data (CoinGecko API) - crypto_market_fetcher.py<br>
     `CoinGeckoMarketData` Fetches real-time cryptocurrency market data from CoinGecko API:
@@ -99,6 +118,7 @@ Before using the SDK, create the following tables in Azure SQL Database:
 - Portfolio Balance Table (Portfolio_Balance)
 - Trade History Table (Trade_History)
 - Market Capitalization History Table (Market_Capitalization_History)
+- DCA Table Helper For Storing The Daily High Price For Each Asset (Daily_High_Price)
 
 This schema is available to copy and use here: `examples/databse_table_creation.sql`<br>
 Conection to the database is based on the sql user and password.
