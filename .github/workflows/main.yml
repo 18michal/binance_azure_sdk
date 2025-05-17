@@ -1,0 +1,17 @@
+name: RaspberryPi-CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  sync-repo:
+    runs-on: self-hosted
+    steps:
+      - name: Update repo in permanent location
+        run: |
+          cd /home/your_pi_name/your_project_name
+          git pull origin main

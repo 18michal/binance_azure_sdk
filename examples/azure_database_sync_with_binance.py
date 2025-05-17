@@ -36,6 +36,15 @@ def insert_trade(database_manager: AzureDatabaseManager, trade_data: DataFrame) 
     database_manager.insert_trade(trade_data=trade_data)
 
 
+@RETRY_POLICY
+def insert_daily_high_price(
+    database_manager: AzureDatabaseManager,
+    daily_high_price_data: list[dict[str, str | float]],
+) -> None:
+    """Insert query into Azure Database."""
+    database_manager.insert_daily_high_price(high_price_data=daily_high_price_data)
+
+
 def load_credentials():
     """Load API credentials from .env file."""
     load_dotenv()
@@ -82,6 +91,7 @@ def main():
         wallet = manager_binance.get_wallet_balances()
         top_crypto = manager_binance.fetch_biggest_crypto_data()
         trades = manager_binance.get_trade_history_last_24h()
+        price_btc = manager_binance.get_yesterdays_high_price(symbol="BTCUSDC")
 
         insert_portfolio_balance(database_manager=manager_database, balance_data=wallet)
         insert_market_history(
@@ -89,6 +99,15 @@ def main():
         )
         insert_trade(database_manager=manager_database, trade_data=trades)
 
+        high_price_data = [
+            {
+                "asset": "BTC",
+                "high_price": price_btc,
+            }
+        ]
+        insert_daily_high_price(
+            database_manager=manager_database, daily_high_price_data=high_price_data
+        )
     except Exception as e:  # pylint: disable=W0718
         print(f"An error occurred: {e}")
 

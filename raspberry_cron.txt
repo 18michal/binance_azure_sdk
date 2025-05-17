@@ -1,0 +1,8 @@
+# Run DCA strategy daily at 20:00
+0 20 * * * /usr/bin/python3 /home/your_pi_name/your_project_name/run_dca_strategy.py
+
+# Run portfolio report monthly on the 1st at 04:00
+0 4 1 * * /usr/bin/python3 /home/your_pi_name/your_project_name/monthly_portfolio_report.py
+
+# Run balance check monthly on the 1st at 06:00
+0 6 1 * * /usr/bin/python3 /home/your_pi_name/your_project_name/monthly_balance_check.py

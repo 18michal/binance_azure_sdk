@@ -9,8 +9,42 @@ This SDK provides:<br>
 ✅ Real-time cryptocurrency price tracking using Binance API and CoinGecko API.<br>
 ✅ Trading operations (buy/sell orders, wallet balance checks) using Binance API.<br>
 ✅ Database storage for historical price data, trade history, and portfolio balances in Azure SQL.<br>
+✅ Flexible DCA (Dollar-Cost Averaging) strategy per user, based on configurable drop thresholds.<br>
+✅ Notification System – Email Alerts & Portfolio Reporting.<br>
 ✅ Automatic retries & logging for robust execution.<br>
 ✅ Unit tests for validating API & database interactions.<br>
+
+## Strategy Layer – Rule-Based DCA Automation
+The SDK project contains **rule-based DCA (Dollar-Cost Averaging)** crypto strategy with user-level configuration. The goal is to give each user control over their trading parameters and allow for low-cost, scheduled automation via **Raspberry Pi**.
+
+⚠️ **Note:** The actual logic in dca_strategy.py is intentionally left minimal to give users flexibility in defining their own strategy logic. This keeps the SDK reusable and not opinionated.
+
+### 📁 Folder Structure – Strategy
+```bash
+strategy/
+├── dca_config_loader.py     # User strategy configuration file
+├── dca_config_loader.py     # Loads and validates user strategy config
+├── dca_strategy.py          # Core logic for running user-defined DCA strategy
+└── src/
+    ├── azure_sql.py         # Interacts with Azure SQL (e.g., price history, trade logs)
+    ├── binance_trading.py   # Simplified Binance order execution helpers
+    ├── dates.py             # Date range helpers (e.g., month start, today)
+    └── setup.py             # Initializes Azure and Binance manager objects
+```
+
+## Notification System – Email Alerts & Portfolio Reporting
+To keep users informed and in control, this SDK includes a modular notification system via gmail.<br>
+It’s designed to send automatic alerts about low balances and portfolio performance.
+
+### 📁 Folder Structure – Strategy
+```bash
+services/
+└── notification/
+    ├── base_notifier.py             # Base class for sending messages (gmail)
+    ├── wallet_balance_notifier.py   # Sends alert if available funds drop below configured threshold
+    └── portfolio_reporter.py        # Generates and sends portfolio summary to the user
+
+```
 
 ## Prerequisites
 1. **Azure Setup**
@@ -37,7 +71,7 @@ This SDK provides:<br>
     sql_database: "CryptoDB"
 
     binance:
-    min_trade_amount: 15.0 # Fixed minimum trade amount in USDT
+    min_trade_amount: 15.0 # Fixed minimum trade amount in USDC
     ```
 
 4. **Environment Variables (.env file)**
@@ -87,6 +121,7 @@ This SDK provides:<br>
     - Checks open orders
     - Places buy/sell orders
     - Cancels orders
+    - Gets the yesterdays price for requested asset
 
 4. Class Market Data (CoinGecko API) - crypto_market_fetcher.py<br>
     `CoinGeckoMarketData` Fetches real-time cryptocurrency market data from CoinGecko API:
@@ -99,9 +134,34 @@ Before using the SDK, create the following tables in Azure SQL Database:
 - Portfolio Balance Table (Portfolio_Balance)
 - Trade History Table (Trade_History)
 - Market Capitalization History Table (Market_Capitalization_History)
+- DCA Table Helper For Storing The Daily High Price For Each Asset (Daily_High_Price)
 
 This schema is available to copy and use here: `examples/databse_table_creation.sql`<br>
 Conection to the database is based on the sql user and password.
+
+## CI/CD & Automation with Raspberry Pi
+To make the trading system self-sufficient and cost-efficient, the SDK is integrated with GitHub Actions and a self-hosted Raspberry Pi runner for continuous deployment and daily execution.
+
+This setup allows:
+- Automatic updates of your Raspberry Pi after each `push` to the `main` branch.
+- Daily and monthly automation of DCA strategy and notifications using `cron`.
+
+### Prerequisites
+1. Clone your project into your home directory on your Raspberry Pi
+2. Set up your self-hosted runner by following this [tutorial](https://pabluc.medium.com/raspberrypi-github-actions-ci-cd-1dc098b4c7d3)
+3. Make the runner a service (so it survives reboots and runs in the background):
+    ```bash
+    # From inside the GitHub runner directory
+    sudo ./svc.sh install
+    sudo ./svc.sh start
+    sudo ./svc.sh status  # To check if it's running
+    ```
+
+    This ensures your Raspberry Pi will **automatically pull changes** whenever a new commit lands on the `main` branch—no need to SSH in or run manual scripts.
+4. Automate daily/monthly tasks. To load the cron jobs:
+```bash
+crontab raspberry_cron.txt
+```
 
 ## Running Code & Tests tip
 1. To execute a code, use this example:
