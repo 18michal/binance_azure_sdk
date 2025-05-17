@@ -10,7 +10,7 @@ This SDK provides:<br>
 ✅ Trading operations (buy/sell orders, wallet balance checks) using Binance API.<br>
 ✅ Database storage for historical price data, trade history, and portfolio balances in Azure SQL.<br>
 ✅ Flexible DCA (Dollar-Cost Averaging) strategy per user, based on configurable drop thresholds.<br>
-✅Notification System – Email Alerts & Portfolio Reporting.<br>
+✅ Notification System – Email Alerts & Portfolio Reporting.<br>
 ✅ Automatic retries & logging for robust execution.<br>
 ✅ Unit tests for validating API & database interactions.<br>
 
@@ -138,6 +138,30 @@ Before using the SDK, create the following tables in Azure SQL Database:
 
 This schema is available to copy and use here: `examples/databse_table_creation.sql`<br>
 Conection to the database is based on the sql user and password.
+
+## CI/CD & Automation with Raspberry Pi
+To make the trading system self-sufficient and cost-efficient, the SDK is integrated with GitHub Actions and a self-hosted Raspberry Pi runner for continuous deployment and daily execution.
+
+This setup allows:
+- Automatic updates of your Raspberry Pi after each `push` to the `main` branch.
+- Daily and monthly automation of DCA strategy and notifications using `cron`.
+
+### Prerequisites
+1. Clone your project into your home directory on your Raspberry Pi
+2. Set up your self-hosted runner by following this [tutorial](https://pabluc.medium.com/raspberrypi-github-actions-ci-cd-1dc098b4c7d3)
+3. Make the runner a service (so it survives reboots and runs in the background):
+    ```bash
+    # From inside the GitHub runner directory
+    sudo ./svc.sh install
+    sudo ./svc.sh start
+    sudo ./svc.sh status  # To check if it's running
+    ```
+
+    This ensures your Raspberry Pi will **automatically pull changes** whenever a new commit lands on the `main` branch—no need to SSH in or run manual scripts.
+4. Automate daily/monthly tasks. To load the cron jobs:
+```bash
+crontab raspberry_cron.txt
+```
 
 ## Running Code & Tests tip
 1. To execute a code, use this example:
